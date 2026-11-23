@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t("app_title") }} - {{ t("learn_without_limits") }}{% endblock %}
+
+{% block body_class %}bg-landing{% endblock %}
+
+{% block content %}
+<div class="hero-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; color: white; padding: 60px 20px;">
+    <div style="background: rgba(0, 0, 0, 0.4); padding: 40px; border-radius: var(--border-radius-lg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); max-width: 800px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: var(--shadow-lg);">
+        <div class="logo-icon" style="margin: 0 auto 20px; width: 60px; height: 60px; font-size: 1.8rem;">
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <h1 style="font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 800; line-height: 1.2; margin-bottom: 16px; background: linear-gradient(135deg, #ffffff, #e2e8f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            {{ t("learn_without_limits") }}
+        </h1>
+        <p style="font-size: clamp(1.1rem, 2.5vw, 1.5rem); color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px;">
+            {{ t("hero_subheading") }}
+        </p>
+        <p style="font-size: 1.05rem; color: #f1f5f9; margin-bottom: 36px; line-height: 1.7; max-width: 600px; margin-left: auto; margin-right: auto;">
+            {{ t("about_text") }}
+        </p>
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            {% if session.get('user_id') %}
+                <a href="/student/dashboard" class="btn btn-primary">
+                    <i class="fa-solid fa-gauge"></i>
+                    <span>{{ t("dashboard") }}</span>
+                </a>
+            {% else %}
+                <a href="/login" class="btn btn-primary">
+                    <i class="fa-solid fa-circle-play"></i>
+                    <span>{{ t("get_started") }}</span>
+                </a>
+                <a href="/login" class="btn btn-secondary">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>{{ t("login") }}</span>
+                </a>
+            {% endif %}
+            <a href="#features" class="btn btn-secondary" style="background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.25); color: white;">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>{{ t("about") }}</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div id="features" style="padding: 80px 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); border-radius: var(--border-radius-lg); margin-top: 40px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);">
+    <div style="text-align: center; margin-bottom: 50px; padding: 0 20px;">
+        <h2 style="font-size: 2.25rem; color: var(--primary); font-family: var(--font-heading); margin-bottom: 12px;">
+            {{ t("ai_features") }}
+        </h2>
+        <div style="width: 80px; height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary)); margin: 0 auto 16px; border-radius: 2px;"></div>
+        <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+            Empowering students in deep rural villages with advanced educational technologies built for offline adaptability.
+        </p>
+    </div>
+
+    <div class="course-grid" style="padding: 0 40px;">
+        <!-- Feature 1: AI Learning -->
+        <div class="course-card english">
+            <div class="course-icon-banner">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">
+                {{ t("ai_learning") }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                {{ t("ai_learning_desc") }}
+            </p>
+        </div>
+
+        <!-- Feature 2: Offline Learning -->
+        <div class="course-card math">
+            <div class="course-icon-banner">
+                <i class="fa-solid fa-wifi-slash"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">
+                {{ t("offline_learning") }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                {{ t("offline_learning_desc") }}
+            </p>
+        </div>
+
+        <!-- Feature 3: Quizzes -->
+        <div class="course-card">
+            <div class="course-icon-banner" style="background: rgba(46, 125, 50, 0.1); color: var(--primary);">
+                <i class="fa-solid fa-square-poll-vertical"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">
+                {{ t("quiz") }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                {{ t("quiz_desc") }}
+            </p>
+        </div>
+
+        <!-- Feature 4: Voice Learning -->
+        <div class="course-card english">
+            <div class="course-icon-banner">
+                <i class="fa-solid fa-volume-high"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">
+                {{ t("voice_learning") }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                {{ t("voice_learning_desc") }}
+            </p>
+        </div>
+
+        <!-- Feature 5: Parents Monitoring -->
+        <div class="course-card math">
+            <div class="course-icon-banner">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">
+                {{ t("parents_monitoring") }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                {{ t("parents_monitoring_desc") }}
+            </p>
+        </div>
+
+        <!-- Feature 6: Multilingual Learning -->
+        <div class="course-card">
+            <div class="course-icon-banner" style="background: rgba(46, 125, 50, 0.1); color: var(--primary);">
+                <i class="fa-solid fa-globe"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">
+                {{ t("multilingual_learning") }}
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                {{ t("multilingual_learning_desc") }}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t("register") }} - {{ t("app_title") }}{% endblock %}
+
+{% block body_class %}bg-register{% endblock %}
+
+{% block content %}
+<div class="onboarding-wrapper">
+    <div class="onboarding-card" style="max-width: 560px;">
+        
+        <div style="text-align: center; margin-bottom: 28px;">
+            <div class="logo-icon" style="margin: 0 auto 12px; width:52px; height:52px; font-size:1.6rem;">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h2 style="font-size: 1.85rem; font-weight: 700; color: var(--text-primary);">{{ t("register_title") }}</h2>
+            <p style="font-size: 0.92rem; color: var(--text-secondary); margin-top: 6px;">
+                {{ t("register_desc") }}
+            </p>
+        </div>
+
+        <!-- Role Select Tabs in Registration - Same pills styling -->
+        <div class="auth-tabs" id="regTabs">
+            <div class="auth-tab active" id="tabStudent" onclick="setRegRole('student')">
+                <i class="fa-solid fa-user-graduate" style="margin-right: 4px;"></i>{{ t("student") }}
+            </div>
+            <div class="auth-tab" id="tabParent" onclick="setRegRole('parent')">
+                <i class="fa-solid fa-users" style="margin-right: 4px;"></i>{{ t("parent") }}
+            </div>
+            <div class="auth-tab" id="tabAdmin" onclick="setRegRole('admin')">
+                <i class="fa-solid fa-user-shield" style="margin-right: 4px;"></i>{{ t("admin") }}
+            </div>
+        </div>
+
+        <form id="registerForm" method="POST" action="/register" onsubmit="return validateForm()">
+            <!-- Hidden inputs -->
+            <input type="hidden" name="role" id="regRole" value="student">
+
+            <!-- Full Name -->
+            <div class="form-group">
+                <label for="regName">{{ t("full_name") }}</label>
+                <div class="form-control-wrapper">
+                    <i class="fa-solid fa-user input-icon"></i>
+                    <input type="text" class="form-control" id="regName" name="name" required placeholder="John Doe">
+                </div>
+            </div>
+
+            <!-- Email Address -->
+            <div class="form-group">
+                <label for="regEmail">{{ t("email_address") }}</label>
+                <div class="form-control-wrapper">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input type="email" class="form-control" id="regEmail" name="email" required placeholder="{{ t('email_placeholder') }}" oninput="checkEmailValidity(this)">
+                </div>
+                <span id="emailError" style="font-size: 0.75rem; color: #ef4444; font-weight: 600; display: none; margin-top: 4px;">
+                    <i class="fa-solid fa-circle-exclamation"></i> {{ t("email_valid") }}
+                </span>
+            </div>
+
+            <!-- Mobile Number -->
+            <div class="form-group" id="groupMobile">
+                <label for="regMobile">{{ t("mobile_number") }}</label>
+                <div class="form-control-wrapper">
+                    <i class="fa-solid fa-phone input-icon"></i>
+                    <input type="text" class="form-control" id="regMobile" name="mobile" placeholder="9876543210" oninput="checkMobileValidity(this)">
+                </div>
+                <span id="mobileError" style="font-size: 0.75rem; color: #ef4444; font-weight: 600; display: none; margin-top: 4px;">
+                    <i class="fa-solid fa-circle-exclamation"></i> {{ t("phone_valid") }}
+                </span>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="regPassword">{{ t("password") }}</label>
+                <div class="form-control-wrapper">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" class="form-control" id="regPassword" name="password" required placeholder="••••••••" oninput="checkPasswordStrength(this)">
+                    <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePasswordReg('regPassword', this)"></i>
+                </div>
+                <!-- Password Strength Meter -->
+                <div class="strength-meter-wrapper">
+                    <div class="strength-meter-bar">
+                        <div class="strength-meter-fill" id="strengthFill"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText">{{ t("pass_strength") }}: -</span>
+                </div>
+            </div>
+
+            <!-- Student Specific Fields -->
+            <div id="studentFields">
+                <div class="form-group">
+                    <label for="regPrimaryParentPhone">{{ t("primary_parent_phone") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="text" class="form-control" id="regPrimaryParentPhone" name="primary_parent_phone" placeholder="9876543210" oninput="checkPrimaryParentPhoneValidity(this)">
+                    </div>
+                    <span id="primaryParentPhoneError" style="font-size: 0.75rem; color: #ef4444; font-weight: 600; display: none; margin-top: 4px;">
+                        <i class="fa-solid fa-circle-exclamation"></i> {{ t("phone_valid") }}
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="regSecondaryParentPhone">{{ t("secondary_parent_phone") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="text" class="form-control" id="regSecondaryParentPhone" name="secondary_parent_phone" placeholder="9876543210" oninput="checkSecondaryParentPhoneValidity(this)">
+                    </div>
+                    <span id="secondaryParentPhoneError" style="font-size: 0.75rem; color: #ef4444; font-weight: 600; display: none; margin-top: 4px;">
+                        <i class="fa-solid fa-circle-exclamation"></i> {{ t("phone_valid") }}
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="regClass">{{ t("class") }}</label>
+                    <select class="form-control" id="regClass" name="class">
+                        <option value="LKG">LKG</option>
+                        <option value="UKG">UKG</option>
+                        <option value="Class 1">Class 1</option>
+                        <option value="Class 2">Class 2</option>
+                        <option value="Class 3">Class 3</option>
+                        <option value="Class 4">Class 4</option>
+                        <option value="Class 5">Class 5</option>
+                        <option value="Class 6">Class 6</option>
+                        <option value="Class 7">Class 7</option>
+                        <option value="Class 8" selected>Class 8</option>
+                        <option value="Class 9">Class 9</option>
+                        <option value="Class 10">Class 10</option>
+                        <option value="Class 11">Class 11</option>
+                        <option value="Class 12">Class 12</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="regLanguage">{{ t("learning_language") }}</label>
+                    <select class="form-control" id="regLanguage" name="language">
+                        <option value="english" selected>English</option>
+                        <option value="tamil">தமிழ் (Tamil)</option>
+                        <option value="hindi">हिन्दी (Hindi)</option>
+                        <option value="telugu">తెలుగు (Telugu)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Parent Specific Fields -->
+            <div id="parentFields" style="display: none;">
+                <!-- Parent account will be automatically connected using parent phone number -->
+            </div>
+
+            <button type="submit" class="btn btn-accent btn-block" style="width: 100%; margin-top: 24px; margin-bottom: 24px; padding: 14px; font-size:1.05rem;">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>{{ t("create_account_btn") }}</span>
+            </button>
+        </form>
+
+        <div style="text-align: center; border-top: 1px solid rgba(46,125,50,0.1); padding-top: 16px;">
+            <p style="font-size: 0.95rem; color: var(--text-secondary);">
+                {{ t("login_instead") }}? 
+                <a href="/login" style="font-weight: 700; color: var(--primary);">{{ t("login") }}</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Extract parameters from URL query string
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialRole = urlParams.get('role') || 'student';
+    const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+    const initialLanguage = urlParams.get('language') || savedLang;
+
+    // Set initial configuration
+    document.addEventListener("DOMContentLoaded", function() {
+        setRegRole(initialRole);
+        const langSelect = document.getElementById('regLanguage');
+        if (langSelect) {
+            langSelect.value = initialLanguage;
+        }
+    });
+
+    function setRegRole(role) {
+        document.getElementById('regRole').value = role;
+        
+        // Style active tab
+        const tabs = document.querySelectorAll('#regTabs .auth-tab');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        const tabMap = {
+            'student': 'tabStudent',
+            'parent': 'tabParent',
+            'admin': 'tabAdmin'
+        };
+        const activeTab = document.getElementById(tabMap[role]);
+        if(activeTab) activeTab.classList.add('active');
+        
+        const studentFields = document.getElementById('studentFields');
+        const parentFields = document.getElementById('parentFields');
+        const groupMobile = document.getElementById('groupMobile');
+        
+        const stEmail = document.getElementById('regEmail');
+        const stMobile = document.getElementById('regMobile');
+        const regPrimaryParentPhone = document.getElementById('regPrimaryParentPhone');
+        const regSecondaryParentPhone = document.getElementById('regSecondaryParentPhone');
+
+        if (role === 'student') {
+            studentFields.style.display = 'block';
+            parentFields.style.display = 'none';
+            groupMobile.style.display = 'block';
+            
+            stEmail.required = true;
+            stMobile.required = false;
+            if (regPrimaryParentPhone) regPrimaryParentPhone.required = true;
+            if (regSecondaryParentPhone) regSecondaryParentPhone.required = false;
+        } else if (role === 'parent') {
+            studentFields.style.display = 'none';
+            parentFields.style.display = 'none';
+            groupMobile.style.display = 'block';
+            
+            stEmail.required = true;
+            stMobile.required = true;
+            if (regPrimaryParentPhone) regPrimaryParentPhone.required = false;
+            if (regSecondaryParentPhone) regSecondaryParentPhone.required = false;
+        } else if (role === 'admin') {
+            studentFields.style.display = 'none';
+            parentFields.style.display = 'none';
+            groupMobile.style.display = 'none';
+            
+            stEmail.required = true;
+            stMobile.required = false;
+            if (regPrimaryParentPhone) regPrimaryParentPhone.required = false;
+            if (regSecondaryParentPhone) regSecondaryParentPhone.required = false;
+        }
+    }
+
+    function togglePasswordReg(fieldId, iconEl) {
+        const passwordInput = document.getElementById(fieldId);
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            iconEl.className = 'fa-solid fa-eye toggle-password';
+        } else {
+            passwordInput.type = 'password';
+            iconEl.className = 'fa-solid fa-eye-slash toggle-password';
+        }
+    }
+
+    // Password strength logic
+    function checkPasswordStrength(input) {
+        const fill = document.getElementById('strengthFill');
+        const text = document.getElementById('strengthText');
+        const pass = input.value;
+        let score = 0;
+
+        if (pass.length > 5) score++;
+        if (pass.length > 8) score++;
+        if (/[A-Z]/.test(pass)) score++;
+        if (/[0-9]/.test(pass)) score++;
+        if (/[^A-Za-z0-9]/.test(pass)) score++;
+
+        const percentage = (score / 5) * 100;
+        fill.style.width = percentage + '%';
+
+        if (score === 0) {
+            fill.style.backgroundColor = '#ef4444';
+            text.textContent = '{{ t("pass_strength") }}: -';
+        } else if (score <= 2) {
+            fill.style.backgroundColor = '#ef4444';
+            text.textContent = '{{ t("pass_strength") }}: {{ t("weak") }}';
+        } else if (score <= 4) {
+            fill.style.backgroundColor = '#f59e0b';
+            text.textContent = '{{ t("pass_strength") }}: {{ t("medium") }}';
+        } else {
+            fill.style.backgroundColor = '#4caf50';
+            text.textContent = '{{ t("pass_strength") }}: {{ t("strong") }}';
+        }
+    }
+
+    // Client-side validations
+    function checkEmailValidity(input) {
+        const err = document.getElementById('emailError');
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (input.value && !re.test(input.value)) {
+            err.style.display = 'block';
+        } else {
+            err.style.display = 'none';
+        }
+    }
+
+    function checkMobileValidity(input) {
+        const err = document.getElementById('mobileError');
+        const re = /^\d{10}$/;
+        if (input.value && !re.test(input.value)) {
+            err.style.display = 'block';
+        } else {
+            err.style.display = 'none';
+        }
+    }
+
+    function checkPrimaryParentPhoneValidity(input) {
+        const err = document.getElementById('primaryParentPhoneError');
+        const re = /^\d{10}$/;
+        if (input.value && !re.test(input.value)) {
+            err.style.display = 'block';
+        } else {
+            err.style.display = 'none';
+        }
+    }
+
+    function checkSecondaryParentPhoneValidity(input) {
+        const err = document.getElementById('secondaryParentPhoneError');
+        const re = /^\d{10}$/;
+        if (input.value && !re.test(input.value)) {
+            err.style.display = 'block';
+        } else {
+            err.style.display = 'none';
+        }
+    }
+
+    function validateForm() {
+        const email = document.getElementById('regEmail').value.trim();
+        const mobile = document.getElementById('regMobile').value.trim();
+        const role = document.getElementById('regRole').value;
+
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const mobileRe = /^\d{10}$/;
+
+        if (email && !emailRe.test(email)) {
+            alert('{{ t("email_valid") }}');
+            return false;
+        }
+
+        if (role !== 'admin' && mobile && !mobileRe.test(mobile)) {
+            alert('{{ t("phone_valid") }}');
+            return false;
+        }
+
+        if (role === 'student') {
+            const primaryPhone = document.getElementById('regPrimaryParentPhone').value.trim();
+            const secondaryPhone = document.getElementById('regSecondaryParentPhone').value.trim();
+            if (!primaryPhone || !mobileRe.test(primaryPhone)) {
+                alert('{{ t("phone_valid") }}');
+                return false;
+            }
+            if (secondaryPhone) {
+                if (!mobileRe.test(secondaryPhone)) {
+                    alert('{{ t("phone_valid") }}');
+                    return false;
+                }
+                if (primaryPhone === secondaryPhone) {
+                    alert('{{ t("phones_identical_error") }}');
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t("contact") }} - {{ t("app_title") }}{% endblock %}
+
+{% block content %}
+<div class="glass-card card-accent" style="max-width: 600px; margin: 40px auto; padding: 40px;">
+    <div class="card-header" style="justify-content: center; text-align: center; margin-bottom: 24px;">
+        <h2 class="card-title" style="font-size: 2rem; color: var(--primary);">
+            <i class="fa-solid fa-envelope" style="font-size: 1.8rem; margin-right: 8px;"></i>
+            {{ t("contact_title") }}
+        </h2>
+    </div>
+    
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px; font-size: 0.98rem; line-height: 1.6;">
+        {{ t("contact_desc") }}
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.5); padding: 16px 20px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+            <i class="fa-solid fa-envelope" style="font-size: 1.4rem; color: var(--primary);"></i>
+            <div>
+                <strong style="display: block; font-size: 0.82rem; color: var(--text-secondary); text-transform: uppercase;">{{ t("email") }}</strong>
+                <span style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">support@ruraledu.com</span>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.5); padding: 16px 20px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+            <i class="fa-solid fa-phone" style="font-size: 1.4rem; color: var(--primary);"></i>
+            <div>
+                <strong style="display: block; font-size: 0.82rem; color: var(--text-secondary); text-transform: uppercase;">{{ t("mobile_number") }}</strong>
+                <span style="font-size: 1rem; font-weight: 600; color: var(--text-primary);">+91 98765 43210</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulation form -->
+    <form onsubmit="event.preventDefault(); alert(this.getAttribute('data-message')); this.reset();" data-message="{{ t('message_sent') }}" style="border-top: 1px solid var(--border-color); padding-top: 24px;">
+        <div class="form-group">
+            <label>{{ t("full_name") }}</label>
+            <div class="form-control-wrapper">
+                <i class="fa-solid fa-user input-icon"></i>
+                <input type="text" class="form-control" required placeholder="e.g. John Doe">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>{{ t("email_address") }}</label>
+            <div class="form-control-wrapper">
+                <i class="fa-solid fa-envelope input-icon"></i>
+                <input type="email" class="form-control" required placeholder="e.g. john@example.com">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>{{ t("description") }}</label>
+            <textarea class="form-control" rows="4" required style="padding-left: 16px; resize: none;" placeholder="Type your message here..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 14px;">
+            <i class="fa-solid fa-paper-plane"></i>
+            {{ t("submit") }}
+        </button>
+    </form>
+</div>
+{% endblock %}

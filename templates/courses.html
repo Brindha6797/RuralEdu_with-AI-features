@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.course_name }} - {{ t("app_title") }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <a href="/student/dashboard" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); font-weight: 600; font-size: 0.95rem;">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>{{ t("home") }} / {{ t("dashboard") }}</span>
+    </a>
+    
+    <div style="margin-top: 18px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 6px; color: var(--primary);">{{ course.course_name }}</h1>
+            <p style="color: var(--text-secondary); font-size: 1.05rem;">{{ course.description or t("course_desc_placeholder") }}</p>
+        </div>
+        <span class="user-badge" style="background: rgba(46,125,50,0.1); border-color: rgba(46,125,50,0.25); color: var(--primary); font-weight: 700; font-size: 0.95rem;">
+            {{ t("class_8") }}
+        </span>
+    </div>
+</div>
+
+<!-- Navigation Tabs for Course Materials - Pills with no white background -->
+<div class="auth-tabs" style="margin-bottom: 30px;">
+    <div class="auth-tab" id="tabVideo" onclick="activateCourseTab('video')">
+        <i class="fa-solid fa-circle-play" style="margin-right: 4px;"></i> {{ t("video_lesson") }}
+    </div>
+    <div class="auth-tab" id="tabNotes" onclick="activateCourseTab('notes')">
+        <i class="fa-solid fa-file-pdf" style="margin-right: 4px;"></i> {{ t("notes") }}
+    </div>
+    <div class="auth-tab" id="tabQuiz" onclick="activateCourseTab('quiz')">
+        <i class="fa-solid fa-circle-question" style="margin-right: 4px;"></i> {{ t("quiz") }}
+    </div>
+    <div class="auth-tab" id="tabDownload" onclick="activateCourseTab('download')">
+        <i class="fa-solid fa-download" style="margin-right: 4px;"></i> {{ t("save") }}
+    </div>
+</div>
+
+<div class="dashboard-grid" style="margin-top: 0;">
+    
+    <!-- MAIN CONTENT VIEW (Left column) -->
+    <div class="col-8">
+        
+        <!-- ==================== VIDEO TAB ==================== -->
+        <div id="viewVideo" class="glass-card" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-play"></i> {{ t("video_lesson") }}</h3>
+            </div>
+            
+            {% if videos %}
+                <div style="background: #000; border-radius: var(--border-radius-md); overflow: hidden; position: relative; aspect-ratio: 16/9; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+                    {% set video = videos[0] %}
+                    <iframe id="videoPlayer" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+                            data-initial-video-url="{{ videos[0].video_url }}"
+                            data-initial-video-duration="{{ videos[0].duration or '15 mins' }}"></iframe>
+                </div>
+                <h4 id="videoTitle" style="font-size: 1.35rem; font-weight:700; margin-bottom:8px; color:var(--text-primary);">{{ t("video_lesson") }}</h4>
+                <p id="videoDuration" style="font-size: 0.9rem; color: var(--primary); font-weight: 600; margin-bottom: 20px;">
+                    <i class="fa-solid fa-clock"></i> {{ t("duration") }}: {{ video.duration or 'Unknown' }}
+                </p>
+
+                <!-- Future AI Placeholders linked to Video -->
+                <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- AI Summary -->
+                    <div style="background: rgba(46,125,50,0.04); border: 1px solid var(--border-color); padding: 20px; border-radius: var(--border-radius-md);">
+                        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 10px;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> {{ t("ai_summary") }}
+                        </h4>
+                        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+                            {{ t("ai_summary_placeholder") }}
+                        </p>
+                        <button class="btn btn-primary btn-sm" onclick="simulateAISummary()">
+                            <i class="fa-solid fa-gears"></i> {{ t("generate_summary") }}
+                        </button>
+                        <div id="aiSummaryOutput" style="display: none; font-size: 0.85rem; color: var(--text-primary); margin-top: 16px; border-left: 3px solid var(--primary); padding-left: 12px; line-height: 1.5;"></div>
+                    </div>
+
+                    <!-- Voice tutoring assistant -->
+                    <div style="background: rgba(255, 193, 7, 0.06); border: 1px solid rgba(255, 193, 7, 0.25); padding: 20px; border-radius: var(--border-radius-md);">
+                        <h4 style="font-size: 1.05rem; font-weight: 700; color: #b45309; margin-bottom: 10px;">
+                            <i class="fa-solid fa-volume-high"></i> {{ t("voice_assistant") }}
+                        </h4>
+                        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+                            {{ t("voice_placeholder") }}
+                        </p>
+                        <button class="btn btn-accent btn-sm" onclick="simulateVoiceSpeech()" style="color:#1e293b;">
+                            <i class="fa-solid fa-circle-play"></i> {{ t("play_explanation") }}
+                        </button>
+                        <audio id="ttsAudio" style="display:none;"></audio>
+                    </div>
+                </div>
+            {% else %}
+                <div style="text-align:center; padding:60px 0; color:var(--text-secondary);">
+                    <i class="fa-solid fa-video-slash" style="font-size:3.5rem; color:var(--text-muted); margin-bottom:20px;"></i>
+                    <p style="font-size: 1.1rem;">{{ t("no_videos") }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ==================== NOTES TAB ==================== -->
+        <div id="viewNotes" class="glass-card" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-file-invoice"></i> {{ t("pdf_viewer") }}</h3>
+            </div>
+            
+            {% if notes %}
+                <div style="display:flex; flex-direction:column; gap:20px;">
+                    {% for note in notes %}
+                        <div class="schedule-item" style="justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                            <div style="display:flex; align-items:center; gap:16px;">
+                                <i class="fa-solid fa-file-pdf" style="font-size: 2.6rem; color: #ef4444;"></i>
+                                <div>
+                                    <div class="schedule-title">{{ note.note_title }}</div>
+                                    <div class="schedule-subtitle">{{ t("pdf_notes_subtitle") }}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:12px; align-items: center;">
+                                <a href="{{ url_for('static', filename='uploads/' ~ note.file_path.split('/')[-1].split('\\')[-1]) }}" target="_blank" class="btn btn-secondary btn-sm" style="padding: 10px 18px;">
+                                    <i class="fa-solid fa-eye"></i> {{ t("view") }}
+                                </a>
+                                <a href="{{ url_for('static', filename='uploads/' ~ note.file_path.split('/')[-1].split('\\')[-1]) }}" download class="btn btn-primary btn-sm" style="padding: 10px 18px;">
+                                    <i class="fa-solid fa-download"></i> {{ t("save") }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align:center; padding:60px 0; color:var(--text-secondary);">
+                    <i class="fa-solid fa-file-excel" style="font-size:3.5rem; color:var(--text-muted); margin-bottom:20px;"></i>
+                    <p style="font-size: 1.1rem;">{{ t("no_notes") }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ==================== QUIZ TAB ==================== -->
+        <div id="viewQuiz" class="glass-card" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-circle-question"></i> {{ t("quiz") }}</h3>
+            </div>
+            
+            {% if quizzes %}
+                <form id="quizForm" action="/quiz/submit" method="POST">
+                    <input type="hidden" name="course_id" value="{{ course.course_id }}">
+                    
+                    {% for quiz in quizzes %}
+                        <div style="margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 24px;">
+                            <p style="font-size: 1.15rem; font-weight: 600; margin-bottom: 16px; display: flex; gap: 8px; color:var(--text-primary);">
+                                <span style="color: var(--primary); font-weight: 800;">Q{{ loop.index }}.</span>
+                                <span>{{ quiz.question }}</span>
+                            </p>
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <label class="checkbox-container" style="background: rgba(255,255,255,0.7); border: 1.5px solid var(--border-color); padding: 14px 20px; border-radius: var(--border-radius-md); font-size: 0.98rem; transition: var(--transition-smooth);">
+                                    <input type="radio" name="answer_{{ quiz.quiz_id }}" value="{{ quiz.option1 }}" required style="accent-color: var(--primary);">
+                                    <span style="margin-left: 10px;">{{ quiz.option1 }}</span>
+                                </label>
+                                <label class="checkbox-container" style="background: rgba(255,255,255,0.7); border: 1.5px solid var(--border-color); padding: 14px 20px; border-radius: var(--border-radius-md); font-size: 0.98rem; transition: var(--transition-smooth);">
+                                    <input type="radio" name="answer_{{ quiz.quiz_id }}" value="{{ quiz.option2 }}" style="accent-color: var(--primary);">
+                                    <span style="margin-left: 10px;">{{ quiz.option2 }}</span>
+                                </label>
+                                <label class="checkbox-container" style="background: rgba(255,255,255,0.7); border: 1.5px solid var(--border-color); padding: 14px 20px; border-radius: var(--border-radius-md); font-size: 0.98rem; transition: var(--transition-smooth);">
+                                    <input type="radio" name="answer_{{ quiz.quiz_id }}" value="{{ quiz.option3 }}" style="accent-color: var(--primary);">
+                                    <span style="margin-left: 10px;">{{ quiz.option3 }}</span>
+                                </label>
+                                <label class="checkbox-container" style="background: rgba(255,255,255,0.7); border: 1.5px solid var(--border-color); padding: 14px 20px; border-radius: var(--border-radius-md); font-size: 0.98rem; transition: var(--transition-smooth);">
+                                    <input type="radio" name="answer_{{ quiz.quiz_id }}" value="{{ quiz.option4 }}" style="accent-color: var(--primary);">
+                                    <span style="margin-left: 10px;">{{ quiz.option4 }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-accent" style="padding: 14px 40px; color:#1e293b;">
+                        <i class="fa-solid fa-paper-plane"></i> {{ t("submit_answers") }}
+                    </button>
+                </form>
+            {% else %}
+                <div style="text-align:center; padding:60px 0; color:var(--text-secondary);">
+                    <i class="fa-solid fa-list-check" style="font-size:3.5rem; color:var(--text-muted); margin-bottom:20px;"></i>
+                    <p style="font-size: 1.1rem;">{{ t("no_quiz") }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ==================== DOWNLOADS TAB ==================== -->
+        <div id="viewDownload" class="glass-card" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-download"></i> {{ t("save_offline_resources") }}</h3>
+            </div>
+            
+            <p style="color:var(--text-secondary); margin-bottom: 24px; font-size:0.98rem; line-height: 1.6;">
+                {{ t("offline_desc_detail") }}
+            </p>
+            
+            {% if notes or videos %}
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    {% for note in notes %}
+                        <div class="schedule-item" style="justify-content: space-between; padding: 16px 20px; flex-wrap:wrap; gap:12px;">
+                            <div style="display:flex; align-items:center; gap:16px;">
+                                <i class="fa-solid fa-file-pdf" style="font-size: 2rem; color: #ef4444;"></i>
+                                <div>
+                                    <div class="schedule-title" style="font-size: 0.95rem;">{{ note.note_title }}</div>
+                                    <div class="schedule-subtitle" style="font-size: 0.8rem;">{{ t("pdf_doc_detail") }}</div>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('static', filename='uploads/' ~ note.file_path.split('/')[-1].split('\\')[-1]) }}" download class="btn btn-secondary btn-sm" style="padding: 8px 16px;">
+                                <i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> {{ t("save") }}
+                            </a>
+                        </div>
+                    {% endfor %}
+                    
+                    {% for video in videos %}
+                        <div class="schedule-item" style="justify-content: space-between; padding: 16px 20px; flex-wrap:wrap; gap:12px;">
+                            <div style="display:flex; align-items:center; gap:16px;">
+                                <i class="fa-solid fa-circle-play" style="font-size: 2rem; color: var(--secondary);"></i>
+                                <div>
+                                    <div class="schedule-title" style="font-size: 0.95rem;">{{ t("lesson") }} {{ loop.index }} {{ t("video_material") }}</div>
+                                    <div class="schedule-subtitle" style="font-size: 0.8rem;">{{ t("offline_viewing_desc") }}</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="alert('{{ t(\'video_cached_msg\') }}')" style="padding: 8px 16px;">
+                                <i class="fa-solid fa-cloud-arrow-down" style="color:var(--primary);"></i> {{ t("save") }}
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align:center; padding:40px 0; color:var(--text-secondary);">
+                    <p>{{ t("no_downloads") }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- RIGHT PANEL: Chapters Navigation, Outline and Tips -->
+    <div class="col-4">
+        
+        <!-- Video list navigator -->
+        <div class="glass-card card-primary" style="margin-bottom: 24px;">
+            <div class="card-header" style="margin-bottom: 16px;">
+                <h3 class="card-title" style="font-size: 1.15rem;"><i class="fa-solid fa-list-ol"></i> {{ t("video_lesson") }}</h3>
+            </div>
+            
+            {% if videos %}
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    {% for video in videos %}
+                        <div onclick="selectVideo('{{ video.video_url }}', 'Lesson Video {{ loop.index }}', '{{ video.duration }}')" 
+                             style="cursor:pointer; background:rgba(255,255,255,0.7); border:1.5px solid var(--border-color); border-radius: var(--border-radius-md); padding:12px 16px; transition: var(--transition-smooth); display:flex; gap:12px; align-items:center;">
+                            <i class="fa-solid fa-play-circle" style="color:var(--primary); font-size:1.35rem;"></i>
+                            <div style="flex:1;">
+                                <div style="font-size:0.9rem; font-weight:700; color:var(--text-primary);">{{ t("lesson") }} {{ loop.index }}</div>
+                                <div style="font-size:0.78rem; color:var(--text-secondary); font-weight: 500;">{{ t("duration") }}: {{ video.duration or 'Unknown' }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="font-size:0.85rem; color:var(--text-secondary);">{{ t("no_videos_uploaded") }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Study tip widget -->
+        <div class="glass-card">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; display:flex; align-items:center; gap:8px; color: var(--primary);">
+                <i class="fa-solid fa-circle-info" style="color:var(--accent);"></i>
+                {{ t("study_tip") }}
+            </h3>
+            <p style="font-size:0.88rem; color: var(--text-secondary); line-height:1.6;">
+                {{ t("study_tip_desc") }}
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Tab controls
+    function activateCourseTab(tabId) {
+        const tabs = document.querySelectorAll('.auth-tabs .auth-tab');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        document.getElementById('viewVideo').style.display = 'none';
+        document.getElementById('viewNotes').style.display = 'none';
+        document.getElementById('viewQuiz').style.display = 'none';
+        document.getElementById('viewDownload').style.display = 'none';
+        
+        if (tabId === 'video') {
+            document.getElementById('tabVideo').classList.add('active');
+            document.getElementById('viewVideo').style.display = 'block';
+        } else if (tabId === 'notes') {
+            document.getElementById('tabNotes').classList.add('active');
+            document.getElementById('viewNotes').style.display = 'block';
+        } else if (tabId === 'quiz') {
+            document.getElementById('tabQuiz').classList.add('active');
+            document.getElementById('viewQuiz').style.display = 'block';
+        } else if (tabId === 'download') {
+            document.getElementById('tabDownload').classList.add('active');
+            document.getElementById('viewDownload').style.display = 'block';
+        }
+    }
+
+    // Video selection player source updating
+    function selectVideo(url, title, duration) {
+        const player = document.getElementById('videoPlayer');
+        if (!player) return;
+        
+        let embedUrl = url;
+        if(url.includes('youtube.com/watch?v=')) {
+            const vidId = url.split('v=')[1].split('&')[0];
+            embedUrl = 'https://www.youtube.com/embed/' + vidId;
+        } else if(url.includes('youtu.be/')) {
+            const vidId = url.split('youtu.be/')[1].split('?')[0];
+            embedUrl = 'https://www.youtube.com/embed/' + vidId;
+        }
+        
+        player.src = embedUrl;
+        document.getElementById('videoTitle').textContent = title;
+        document.getElementById('videoDuration').innerHTML = `<i class="fa-solid fa-clock"></i> {{ t("duration") }}: ${duration}`;
+        
+        activateCourseTab('video');
+    }
+
+    // AI summary mock simulation
+    function simulateAISummary() {
+        const out = document.getElementById('aiSummaryOutput');
+        out.style.display = 'block';
+        out.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ t("analyzing_content") }}';
+        
+        setTimeout(() => {
+            out.innerHTML = `
+                <strong style="color:var(--primary);"><i class="fa-solid fa-wand-magic-sparkles"></i> {{ t("ai_summary_insights") }}</strong>
+                <ul style="margin-top: 6px; padding-left: 20px;">
+                    <li><strong>{{ t("key_concept") }}</strong> {{ t("main_formulas_desc") }}</li>
+                    <li><strong>{{ t("real_world_example") }}</strong> {{ t("rural_app_desc") }}</li>
+                    <li><strong>{{ t("summary_advice") }}</strong> {{ t("practice_advice_desc") }}</li>
+                </ul>
+            `;
+        }, 1200);
+    }
+
+    // AI voice mock simulation
+    function simulateVoiceSpeech() {
+        alert('{{ t("tts_simulation_msg") }}');
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action') || 'video';
+        activateCourseTab(action);
+        
+        const playerEl = document.getElementById('videoPlayer');
+        if (playerEl && playerEl.hasAttribute('data-initial-video-url')) {
+            const initialUrl = playerEl.getAttribute('data-initial-video-url');
+            const initialDuration = playerEl.getAttribute('data-initial-video-duration');
+            selectVideo(initialUrl, 'Lesson Video 1', initialDuration);
+        }
+    });
+</script>
+{% endblock %}

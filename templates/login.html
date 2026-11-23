@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t("login") }} - {{ t("app_title") }}{% endblock %}
+
+{% block body_class %}bg-login{% endblock %}
+
+{% block content %}
+<div class="onboarding-wrapper">
+    <div class="onboarding-card">
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div class="logo-icon" style="margin: 0 auto 12px; width:52px; height:52px; font-size:1.6rem;">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h2 style="font-size: 1.85rem; font-weight: 700; color: var(--text-primary);">{{ t("login_title") }}</h2>
+            <p style="font-size: 0.92rem; color: var(--text-secondary); margin-top: 6px;">
+                {{ t("login_desc") }}
+            </p>
+        </div>
+
+        <!-- Role Selector Tabs - Pills styling -->
+        <div class="auth-tabs">
+            <div class="auth-tab active" id="tabStudent" onclick="setRole('student')">
+                <i class="fa-solid fa-user-graduate" style="margin-right: 4px;"></i>{{ t("student") }}
+            </div>
+            <div class="auth-tab" id="tabParent" onclick="setRole('parent')">
+                <i class="fa-solid fa-users" style="margin-right: 4px;"></i>{{ t("parent") }}
+            </div>
+            <div class="auth-tab" id="tabAdmin" onclick="setRole('admin')">
+                <i class="fa-solid fa-user-shield" style="margin-right: 4px;"></i>{{ t("admin") }}
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" method="POST" action="/login">
+            <input type="hidden" name="role" id="formRole" value="student">
+            <!-- Defaults to current session language -->
+            <input type="hidden" name="language" id="formLanguage" value="{{ session.get('language', 'en') }}">
+            <input type="hidden" name="language_explicit" id="languageExplicit" value="false">
+
+            <div class="form-group">
+                <label for="loginIdentifier" id="lblIdentifier">{{ t("email_address") }} / {{ t("mobile_number") }}</label>
+                <div class="form-control-wrapper">
+                    <i class="fa-solid fa-user input-icon" id="identifierIcon"></i>
+                    <input type="text" class="form-control" id="loginIdentifier" name="identifier" required placeholder="{{ t('email_placeholder') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">{{ t("password") }}</label>
+                <div class="form-control-wrapper">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" class="form-control" id="loginPassword" name="password" required placeholder="••••••••">
+                    <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePasswordVisibility('loginPassword', this)"></i>
+                </div>
+            </div>
+
+            <div class="auth-options">
+                <label class="checkbox-container">
+                    <input type="checkbox" name="remember">
+                    <span>{{ t("remember_me") }}</span>
+                </label>
+                <a href="#" onclick="showForgotPasswordModal()" style="font-weight: 600; color: var(--primary);">{{ t("forgot_password") }}</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="width: 100%; margin-bottom: 20px; font-size: 1.05rem; padding: 14px;">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>{{ t("login") }}</span>
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 16px; border-top: 1px solid rgba(46,125,50,0.1); padding-top: 16px;">
+            <p style="font-size: 0.95rem; color: var(--text-secondary);">
+                {{ t("register_prompt") }}
+                <a href="/register" style="font-weight: 700; color: var(--primary);">{{ t("register_now") }}</a>
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="modal-overlay" id="forgotPasswordModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-key" style="color:var(--accent);"></i> {{ t("forgot_password") }}</h3>
+            <button onclick="hideForgotPasswordModal()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.3rem; display:flex; align-items:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem; line-height: 1.6;">
+                {{ t("forgot_password_desc") }}
+            </p>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>{{ t("email_address") }} / {{ t("mobile_number") }}</label>
+                <div class="form-control-wrapper">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input type="text" class="form-control" id="forgotInput" placeholder="email@example.com or 9876543210" style="padding-left:46px;">
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                <button class="btn btn-secondary btn-sm" onclick="hideForgotPasswordModal()">{{ t("cancel") }}</button>
+                <button class="btn btn-accent btn-sm" onclick="submitForgotPassword()" style="color:#1e293b;">{{ t("submit") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setRole(role) {
+        // Update hidden field
+        document.getElementById('formRole').value = role;
+        
+        // Toggle active status on tabs
+        const tabs = document.querySelectorAll('.auth-tabs .auth-tab');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        const tabMap = {
+            'student': 'tabStudent',
+            'parent': 'tabParent',
+            'admin': 'tabAdmin'
+        };
+        const activeTab = document.getElementById(tabMap[role]);
+        if (activeTab) activeTab.classList.add('active');
+
+        // Update placeholder/labels according to role
+        const label = document.getElementById('lblIdentifier');
+        const input = document.getElementById('loginIdentifier');
+        const icon = document.getElementById('identifierIcon');
+
+        if (role === 'student') {
+            label.textContent = '{{ t("email_address") }} / {{ t("mobile_number") }}';
+            input.placeholder = '{{ t("email_placeholder") }}';
+            icon.className = 'fa-solid fa-user-graduate input-icon';
+        } else if (role === 'parent') {
+            label.textContent = '{{ t("parent") }} {{ t("email_address") }} / {{ t("mobile_number") }}';
+            input.placeholder = 'parent@ruraledu.com';
+            icon.className = 'fa-solid fa-users input-icon';
+        } else if (role === 'admin') {
+            label.textContent = '{{ t("admin") }} {{ t("email_address") }}';
+            input.placeholder = 'admin@ruraledu.com';
+            icon.className = 'fa-solid fa-user-shield input-icon';
+        }
+    }
+
+    function togglePasswordVisibility(fieldId, iconEl) {
+        const passwordInput = document.getElementById(fieldId);
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            iconEl.className = 'fa-solid fa-eye toggle-password';
+        } else {
+            passwordInput.type = 'password';
+            iconEl.className = 'fa-solid fa-eye-slash toggle-password';
+        }
+    }
+
+    // Modal Controls
+    function showForgotPasswordModal() {
+        document.getElementById('forgotPasswordModal').classList.add('open');
+    }
+    
+    function hideForgotPasswordModal() {
+        document.getElementById('forgotPasswordModal').classList.remove('open');
+    }
+    
+    function submitForgotPassword() {
+        const val = document.getElementById('forgotInput').value.trim();
+        if(!val) {
+            alert('{{ t("forgot_password_error") }}');
+            return;
+        }
+        alert('{{ t("forgot_password_success") }} ' + val);
+        hideForgotPasswordModal();
+    }
+</script>
+{% endblock %}

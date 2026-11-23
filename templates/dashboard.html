@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t("dashboard") }} - {{ t("app_title") }}{% endblock %}
+
+{% block body_class %}bg-dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Greeting Section -->
+<div style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+    <div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 6px; color: var(--primary);">
+            {{ t("hello_student") }}, {{ session.get('name') }}!
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 1.05rem;">
+            {{ t("today_schedule") }}
+        </p>
+    </div>
+    <!-- Goal Streak badge -->
+    <div class="user-badge" style="background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.2); color: #d97706; padding: 10px 20px; font-size: 1rem; border-radius: 30px;">
+        <i class="fa-solid fa-fire" style="color: #f59e0b; font-size: 1.25rem;"></i>
+        <span><strong>5 {{ t("days") }}</strong> {{ t("today_streak") }}</span>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- LEFT PANEL: Enrolled Courses & Recommendations -->
+    <div class="col-8">
+        
+        <!-- Daily Motivation & Goals -->
+        <div class="glass-card card-primary" style="margin-bottom: 30px; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(46,125,50,0.05));">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    {{ t("daily_motivation") }}
+                </h3>
+            </div>
+            <p style="font-size: 1.1rem; font-style: italic; color: var(--primary); font-weight: 500; margin-bottom: 12px; line-height: 1.6;">
+                "{{ t("daily_quote") }}"
+            </p>
+            <div style="display: flex; gap: 24px; margin-top: 20px; border-top: 1px solid rgba(46,125,50,0.1); padding-top: 16px; flex-wrap: wrap;">
+                <div>
+                    <span style="font-size: 0.82rem; color: var(--text-secondary); display: block; font-weight: 600; text-transform: uppercase;">{{ t("today_goal") }}</span>
+                    <strong style="font-size: 1.05rem; color: var(--text-primary);"><i class="fa-solid fa-circle-check" style="color:var(--primary); margin-right:4px;"></i> {{ t("today_goal_desc") }}</strong>
+                </div>
+                <div>
+                    <span style="font-size: 0.82rem; color: var(--text-secondary); display: block; font-weight: 600; text-transform: uppercase;">{{ t("recommended_course") }}</span>
+                    <strong style="font-size: 1.05rem; color: var(--primary);"><i class="fa-solid fa-star" style="color:var(--accent); margin-right:4px;"></i> {{ t("recommended_course_desc") }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enrolled Courses -->
+        <div class="glass-card" style="margin-bottom: 30px;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa-solid fa-book-open"></i>
+                    {{ t("enrolled_courses") }} ({{ session.get('class') }})
+                </h3>
+            </div>
+            
+            {% if courses %}
+                <div class="course-grid">
+                    {% for course in courses %}
+                        <div class="course-card {% if 'Math' in course.course_name %}math{% elif 'English' in course.course_name %}english{% endif %}">
+                            <div class="course-icon-banner">
+                                {% if 'Math' in course.course_name %}
+                                    <i class="fa-solid fa-calculator"></i>
+                                {% elif 'Sci' in course.course_name %}
+                                    <i class="fa-solid fa-flask"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-language"></i>
+                                {% endif %}
+                            </div>
+                            <h4 style="font-size: 1.25rem; font-weight:700; margin-bottom:8px; color:var(--text-primary);">{{ course.course_name }}</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-secondary); min-height: 48px; margin-bottom: 20px; line-height: 1.6;">
+                                {{ course.description or t("about_text") }}
+                            </p>
+                            
+                            <!-- Course Progress representation -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:600; margin-bottom:6px;">
+                                    <span>{{ t("progress") }}</span>
+                                    {% if 'Math' in course.course_name %}
+                                        <span>75%</span>
+                                    {% elif 'Sci' in course.course_name %}
+                                        <span>50%</span>
+                                    {% else %}
+                                        <span>90%</span>
+                                    {% endif %}
+                                </div>
+                                <div class="progress-track" style="height: 6px;">
+                                    {% if 'Math' in course.course_name %}
+                                        <div class="progress-fill" style="width: 75%; background: var(--accent);"></div>
+                                    {% elif 'Sci' in course.course_name %}
+                                        <div class="progress-fill" style="width: 50%; background: var(--primary);"></div>
+                                    {% else %}
+                                        <div class="progress-fill" style="width: 90%; background: var(--secondary);"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="course-actions">
+                                <a href="/course/{{ course.course_id }}?action=video" class="btn btn-primary btn-sm" title="{{ t('video_lesson') }}">
+                                    <i class="fa-solid fa-circle-play"></i>
+                                    {{ t("watch") }}
+                                </a>
+                                <a href="/course/{{ course.course_id }}?action=notes" class="btn btn-secondary btn-sm" title="{{ t('pdf_viewer') }}">
+                                    <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i>
+                                    {{ t("notes") }}
+                                </a>
+                                <a href="/course/{{ course.course_id }}?action=quiz" class="btn btn-accent btn-sm" style="color:#1e293b;" title="{{ t('quiz') }}">
+                                    <i class="fa-solid fa-circle-question"></i>
+                                    {{ t("quiz") }}
+                                </a>
+                                <a href="/course/{{ course.course_id }}?action=download" class="btn btn-secondary btn-sm" title="{{ t('save_offline_resources') }}">
+                                    <i class="fa-solid fa-download" style="color:var(--primary);"></i>
+                                    {{ t("save") }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 50px 20px; color: var(--text-secondary);">
+                    <i class="fa-solid fa-folder-open" style="font-size: 3.5rem; margin-bottom: 16px; color: var(--text-muted);"></i>
+                    <p style="font-size:1.05rem;">{{ t("no_courses") }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- RIGHT PANEL: Progress Ring, Achievements, Leaderboard -->
+    <div class="col-4">
+        
+        <!-- Circular Progress Card -->
+        <div class="glass-card card-accent" style="margin-bottom: 30px; text-align: center;">
+            <div class="card-header" style="justify-content: center; margin-bottom: 20px;">
+                <h3 class="card-title" style="font-size: 1.15rem;">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    {{ t("today_progress") }}
+                </h3>
+            </div>
+            
+            <div class="circular-progress-wrapper">
+                <svg class="circular-progress-svg" width="140" height="140">
+                    <defs>
+                        <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="var(--primary)" />
+                            <stop offset="100%" stop-color="var(--secondary)" />
+                        </linearGradient>
+                    </defs>
+                    <circle class="circular-progress-bg" cx="70" cy="70" r="60" />
+                    <!-- stroke-dashoffset = 377 - (377 * percentage / 100) -->
+                    <!-- Say average progress is 72% -->
+                    <circle class="circular-progress-bar" cx="70" cy="70" r="60" style="stroke-dashoffset: 105;" />
+                </svg>
+                <div class="circular-progress-text">72%</div>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); font-weight: 500;">
+                {{ t("today_progress_desc") }}
+            </p>
+        </div>
+
+        <!-- Achievements Panel -->
+        <div class="glass-card" style="margin-bottom: 30px;">
+            <div class="card-header">
+                <h3 class="card-title" style="font-size: 1.15rem;">
+                    <i class="fa-solid fa-trophy" style="color:var(--accent);"></i>
+                    {{ t("achievements") }}
+                </h3>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <div style="text-align: center; width: 80px;" title="Completed 5 daily study streaks">
+                    <div style="width: 50px; height: 50px; background: rgba(251, 191, 36, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; font-size: 1.4rem; color: #d97706; border: 1.5px solid var(--accent);">
+                        <i class="fa-solid fa-fire-flame-simple"></i>
+                    </div>
+                    <span style="font-size: 0.72rem; font-weight:600; color:var(--text-secondary);">{{ t("achievement_streak") }}</span>
+                </div>
+                <div style="text-align: center; width: 80px;" title="Scored 100% in a quiz">
+                    <div style="width: 50px; height: 50px; background: rgba(46, 125, 50, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; font-size: 1.4rem; color: var(--primary); border: 1.5px solid var(--primary);">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <span style="font-size: 0.72rem; font-weight:600; color:var(--text-secondary);">{{ t("achievement_quiz") }}</span>
+                </div>
+                <div style="text-align: center; width: 80px;" title="Study 10+ hours offline">
+                    <div style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; font-size: 1.4rem; color: #2563eb; border: 1.5px solid #2563eb;">
+                        <i class="fa-solid fa-download"></i>
+                    </div>
+                    <span style="font-size: 0.72rem; font-weight:600; color:var(--text-secondary);">{{ t("achievement_offline") }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="glass-card">
+            <div class="card-header">
+                <h3 class="card-title" style="font-size: 1.15rem;">
+                    <i class="fa-solid fa-ranking-star"></i>
+                    {{ t("leaderboard") }}
+                </h3>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(251,191,36,0.1); border:1.5px solid var(--accent); border-radius:8px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-weight:800; color:#d97706; font-size:1.1rem;">1.</span>
+                        <strong style="font-size:0.9rem;">{{ session.get('name') }} ({{ t("you") }})</strong>
+                    </div>
+                    <span style="font-weight:700; color:#d97706; font-size:0.95rem;">920 XP</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(0,0,0,0.02); border:1px solid var(--border-color); border-radius:8px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-weight:700; color:var(--text-muted); font-size:1rem;">2.</span>
+                        <span style="font-size:0.9rem; font-weight:500;">Priya Singh</span>
+                    </div>
+                    <span style="font-weight:700; color:var(--text-secondary); font-size:0.9rem;">880 XP</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(0,0,0,0.02); border:1px solid var(--border-color); border-radius:8px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-weight:700; color:var(--text-muted); font-size:1rem;">3.</span>
+                        <span style="font-size:0.9rem; font-weight:500;">Amit Patel</span>
+                    </div>
+                    <span style="font-weight:700; color:var(--text-secondary); font-size:0.9rem;">850 XP</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

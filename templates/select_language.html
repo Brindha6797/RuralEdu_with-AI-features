@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Select Language - {{ t("app_title") }}{% endblock %}
+
+{% block body_class %}bg-language{% endblock %}
+
+{% block content %}
+<div class="onboarding-wrapper">
+    <div class="onboarding-card" style="max-width: 520px; text-align: center;">
+        
+        <div style="margin-bottom: 24px;">
+            <div class="logo-icon" style="margin: 0 auto 16px; width:60px; height:60px; font-size:1.8rem;">
+                <i class="fa-solid fa-globe"></i>
+            </div>
+            <h2 style="font-size: 1.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Select Language</h2>
+            <p style="font-size: 0.95rem; color: var(--text-secondary);">Choose your preferred language to continue</p>
+        </div>
+
+        <div class="lang-grid">
+            <a href="/change_language/en" class="lang-btn">
+                <i class="fa-solid fa-language"></i>
+                <span>English</span>
+            </a>
+            <a href="/change_language/ta" class="lang-btn">
+                <i class="fa-solid fa-language"></i>
+                <span>தமிழ் (Tamil)</span>
+            </a>
+            <a href="/change_language/hi" class="lang-btn">
+                <i class="fa-solid fa-language"></i>
+                <span>हिन्दी (Hindi)</span>
+            </a>
+            <a href="/change_language/te" class="lang-btn">
+                <i class="fa-solid fa-language"></i>
+                <span>తెలుగు (Telugu)</span>
+            </a>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

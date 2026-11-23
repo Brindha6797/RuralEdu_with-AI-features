@@ -1,0 +1,668 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t("admin_title") }} - {{ t("app_title") }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+    <div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 6px; color:var(--primary);">{{ t("admin_title") }}</h1>
+        <p style="color: var(--text-secondary); font-size: 1.05rem;">{{ t("admin_subtitle") }}</p>
+    </div>
+    <span class="user-badge" style="background:rgba(251, 191, 36, 0.1); border-color:var(--accent); color:var(--text-primary); font-weight:700;">
+        <i class="fa-solid fa-user-shield" style="color:var(--accent);"></i> {{ t("system_owner") }}
+    </span>
+</div>
+
+<div class="glass-card" style="padding: 0; overflow: hidden; border-radius: var(--border-radius-lg);">
+    <div class="admin-layout">
+        
+        <!-- SIDEBAR MENU -->
+        <div class="admin-sidebar">
+            <div class="admin-menu-item active" id="menuCourses" onclick="switchAdminTab('courses')">
+                <i class="fa-solid fa-book"></i> <span>{{ t("courses") }}</span>
+            </div>
+            <div class="admin-menu-item" id="menuVideos" onclick="switchAdminTab('videos')">
+                <i class="fa-solid fa-video"></i> <span>{{ t("video_resources")|replace(" Video Resources", "")|replace("Video Resources", "Videos") }}</span>
+            </div>
+            <div class="admin-menu-item" id="menuNotes" onclick="switchAdminTab('notes')">
+                <i class="fa-solid fa-file-pdf"></i> <span>{{ t("notes") }}</span>
+            </div>
+            <div class="admin-menu-item" id="menuQuizzes" onclick="switchAdminTab('quizzes')">
+                <i class="fa-solid fa-square-poll-vertical"></i> <span>{{ t("quiz")|replace(" Quizzes", "")|replace("Quizzes", "Quizzes") }}</span>
+            </div>
+            <div class="admin-menu-item" id="menuStudents" onclick="switchAdminTab('students')">
+                <i class="fa-solid fa-user-graduate"></i> <span>{{ t("student")|replace(" Students", "")|replace("Students", "Students") }}</span>
+            </div>
+            <div class="admin-menu-item" id="menuParents" onclick="switchAdminTab('parents')">
+                <i class="fa-solid fa-users"></i> <span>{{ t("parent")|replace(" Parents", "")|replace("Parents", "Parents") }}</span>
+            </div>
+        </div>
+
+        <!-- MAIN PANEL FOR CRUD -->
+        <div class="admin-content">
+            
+            <!-- ==================== TAB: COURSES ==================== -->
+            <div id="panelCourses" style="display:block;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="font-size:1.45rem; color:var(--primary);">{{ t("course_directory") }}</h2>
+                    <button class="btn btn-accent btn-sm" onclick="openCrudModal('addCourseModal')" style="color:#1e293b;">
+                        <i class="fa-solid fa-plus"></i> {{ t("add_course") }}
+                    </button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>{{ t("enter_course_name") }}</th>
+                                <th>{{ t("description") }}</th>
+                                <th>{{ t("actions") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in courses %}
+                            <tr>
+                                <td>{{ c.course_id }}</td>
+                                <td style="font-weight:700; color:var(--text-primary);">{{ c.course_name }}</td>
+                                <td style="color:var(--text-secondary); max-width: 400px; line-height: 1.5;">{{ c.description or 'No description available.' }}</td>
+                                <td class="action-btns">
+                                    <a href="/admin/course/delete/{{ c.course_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this course?')"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: VIDEOS ==================== -->
+            <div id="panelVideos" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="font-size:1.45rem; color:var(--primary);">{{ t("video_resources") }}</h2>
+                    <button class="btn btn-accent btn-sm" onclick="openCrudModal('addVideoModal')" style="color:#1e293b;">
+                        <i class="fa-solid fa-plus"></i> {{ t("link_video") }}
+                    </button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>{{ t("enter_course_name") }}</th>
+                                <th>{{ t("video_url") }}</th>
+                                <th>{{ t("duration") }}</th>
+                                <th>{{ t("actions") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in videos %}
+                            <tr>
+                                <td>{{ v.video_id }}</td>
+                                <td style="font-weight:600;">{{ v.course_name }}</td>
+                                <td style="font-family:monospace; font-size:0.82rem; color:var(--primary); overflow:hidden; text-overflow:ellipsis; max-width:280px;">{{ v.video_url }}</td>
+                                <td>{{ v.duration }}</td>
+                                <td class="action-btns">
+                                    <a href="/admin/video/delete/{{ v.video_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this video?')"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: NOTES ==================== -->
+            <div id="panelNotes" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="font-size:1.45rem; color:var(--primary);">{{ t("pdf_guides") }}</h2>
+                    <button class="btn btn-accent btn-sm" onclick="openCrudModal('addNotesModal')" style="color:#1e293b;">
+                        <i class="fa-solid fa-plus"></i> {{ t("upload_notes") }}
+                    </button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>{{ t("enter_course_name") }}</th>
+                                <th>{{ t("note_title") }}</th>
+                                <th>{{ t("file_name") }}</th>
+                                <th>{{ t("actions") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for n in notes %}
+                            <tr>
+                                <td>{{ n.note_id }}</td>
+                                <td style="font-weight:600;">{{ n.course_name }}</td>
+                                <td style="font-weight:700; color:var(--text-primary);">{{ n.note_title }}</td>
+                                <td style="font-size:0.85rem; color:var(--text-secondary);">{{ n.file_path.split('/')[-1].split('\\')[-1] }}</td>
+                                <td class="action-btns">
+                                    <a href="/admin/notes/delete/{{ n.note_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this note?')"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: QUIZZES ==================== -->
+            <div id="panelQuizzes" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="font-size:1.45rem; color:var(--primary);">{{ t("quiz_mgmt") }}</h2>
+                    <button class="btn btn-accent btn-sm" onclick="openCrudModal('addQuizModal')" style="color:#1e293b;">
+                        <i class="fa-solid fa-plus"></i> {{ t("create_quiz") }}
+                    </button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>{{ t("enter_course_name") }}</th>
+                                <th>{{ t("question") }}</th>
+                                <th>{{ t("options") }}</th>
+                                <th>{{ t("answer") }}</th>
+                                <th>{{ t("actions") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in quizzes %}
+                            <tr>
+                                <td>{{ q.quiz_id }}</td>
+                                <td style="font-weight:600;">{{ q.course_name }}</td>
+                                <td style="font-weight:700; max-width: 250px; line-height: 1.4;">{{ q.question }}</td>
+                                <td style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">
+                                    1. {{ q.option1 }}<br>2. {{ q.option2 }}<br>3. {{ q.option3 }}<br>4. {{ q.option4 }}
+                                </td>
+                                <td style="color:var(--primary); font-weight:700;">{{ q.answer }}</td>
+                                <td class="action-btns">
+                                    <a href="/admin/quiz/delete/{{ q.quiz_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this quiz question?')"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: STUDENTS ==================== -->
+            <div id="panelStudents" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="font-size:1.45rem; color:var(--primary);">{{ t("student_mgmt") }}</h2>
+                    <button class="btn btn-accent btn-sm" onclick="openCrudModal('addStudentModal')" style="color:#1e293b;">
+                        <i class="fa-solid fa-plus"></i> {{ t("add_student") }}
+                    </button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>{{ t("name") }}</th>
+                                <th>{{ t("email_address") }}</th>
+                                <th>{{ t("mobile_number") }}</th>
+                                <th>Parent Phone</th>
+                                <th>{{ t("class_label") }}</th>
+                                <th>{{ t("learning_language") }}</th>
+                                <th>{{ t("actions") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in students %}
+                            <tr>
+                                <td>{{ s.student_id }}</td>
+                                <td style="font-weight:700; color:var(--text-primary);">{{ s.name }}</td>
+                                <td>{{ s.email or 'N/A' }}</td>
+                                <td>{{ s.mobile or 'N/A' }}</td>
+                                <td>
+                                    {{ s.primary_parent_phone or 'N/A' }}
+                                    {% if s.secondary_parent_phone %}
+                                        / {{ s.secondary_parent_phone }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ s.class }}</td>
+                                <td style="text-transform:capitalize; font-weight: 600; color:var(--primary);">{{ s.language }}</td>
+                                <td class="action-btns">
+                                    <a href="/admin/student/delete/{{ s.student_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this student?')"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: PARENTS ==================== -->
+            <div id="panelParents" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="font-size:1.45rem; color:var(--primary);">{{ t("parent_profiles") }}</h2>
+                    <button class="btn btn-accent btn-sm" onclick="openCrudModal('addParentModal')" style="color:#1e293b;">
+                        <i class="fa-solid fa-plus"></i> {{ t("add_parent") }}
+                    </button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>{{ t("name") }}</th>
+                                <th>{{ t("email_address") }}</th>
+                                <th>{{ t("mobile_number") }}</th>
+                                <th>{{ t("child_student") }}</th>
+                                <th>{{ t("actions") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in parents %}
+                            <tr>
+                                <td>{{ p.parent_id }}</td>
+                                <td style="font-weight:700; color:var(--text-primary);">{{ p.name }}</td>
+                                <td>{{ p.email or 'N/A' }}</td>
+                                <td>{{ p.mobile or 'N/A' }}</td>
+                                <td style="color:var(--primary); font-weight:600;">{{ p.student_name }} (ID: {{ p.student_id }})</td>
+                                <td class="action-btns">
+                                    <a href="/admin/parent/delete/{{ p.parent_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this parent link?')"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ==================== CRUD MODALS ==================== -->
+
+<!-- Modal: Add Course -->
+<div class="modal-overlay" id="addCourseModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-book"></i> {{ t("add_course") }}</h3>
+            <button onclick="closeCrudModal('addCourseModal')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.3rem; display:flex; align-items:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form action="/admin/course/add" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>{{ t("enter_course_name") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-bookmark input-icon"></i>
+                        <input type="text" class="form-control" name="course_name" required placeholder="e.g., Class 8 Mathematics" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("description") }}</label>
+                    <textarea class="form-control" name="description" rows="3" placeholder="{{ t('enter_description') }}" style="padding-left:16px;"></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeCrudModal('addCourseModal')">{{ t("cancel") }}</button>
+                    <button type="submit" class="btn btn-accent btn-sm" style="color:#1e293b;">{{ t("submit") }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Add Video -->
+<div class="modal-overlay" id="addVideoModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-video"></i> {{ t("link_video") }}</h3>
+            <button onclick="closeCrudModal('addVideoModal')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.3rem; display:flex; align-items:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form action="/admin/video/add" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>{{ t("select_course") }}</label>
+                    <select class="form-control" name="course_id" required>
+                        {% for c in courses %}
+                            <option value="{{ c.course_id }}">{{ c.course_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("youtube_url") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-brands fa-youtube input-icon"></i>
+                        <input type="url" class="form-control" name="video_url" required placeholder="https://www.youtube.com/watch?v=..." style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("duration") }} (e.g. 15 mins)</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-clock input-icon"></i>
+                        <input type="text" class="form-control" name="duration" required placeholder="12:30" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeCrudModal('addVideoModal')">{{ t("cancel") }}</button>
+                    <button type="submit" class="btn btn-accent btn-sm" style="color:#1e293b;">{{ t("submit") }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Add PDF Notes -->
+<div class="modal-overlay" id="addNotesModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-file-pdf"></i> {{ t("upload_notes") }}</h3>
+            <button onclick="closeCrudModal('addNotesModal')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.3rem; display:flex; align-items:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form action="/admin/notes/add" method="POST" enctype="multipart/form-data">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>{{ t("select_course") }}</label>
+                    <select class="form-control" name="course_id" required>
+                        {% for c in courses %}
+                            <option value="{{ c.course_id }}">{{ c.course_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("note_title") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-file-signature input-icon"></i>
+                        <input type="text" class="form-control" name="note_title" required placeholder="Chapter 1 Revision Study Notes" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("notes_file") }}</label>
+                    <input type="file" class="form-control" name="notes_file" accept=".pdf" required style="padding-left:16px;">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeCrudModal('addNotesModal')">{{ t("cancel") }}</button>
+                    <button type="submit" class="btn btn-accent btn-sm" style="color:#1e293b;">{{ t("submit") }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Add Quiz -->
+<div class="modal-overlay" id="addQuizModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-circle-question"></i> {{ t("create_quiz") }}</h3>
+            <button onclick="closeCrudModal('addQuizModal')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.3rem; display:flex; align-items:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form action="/admin/quiz/add" method="POST">
+            <div class="modal-body" style="max-height: 480px; overflow-y: auto;">
+                <div class="form-group">
+                    <label>{{ t("select_course") }}</label>
+                    <select class="form-control" name="course_id" required>
+                        {% for c in courses %}
+                            <option value="{{ c.course_id }}">{{ c.course_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("question") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-quote-left input-icon"></i>
+                        <input type="text" class="form-control" name="question" required placeholder="What is Photosynthesis?" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group">
+                        <label>{{ t("option1") }}</label>
+                        <input type="text" class="form-control" name="option1" required placeholder="Option 1" style="padding-left:16px;">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ t("option2") }}</label>
+                        <input type="text" class="form-control" name="option2" required placeholder="Option 2" style="padding-left:16px;">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ t("option3") }}</label>
+                        <input type="text" class="form-control" name="option3" required placeholder="Option 3" style="padding-left:16px;">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ t("option4") }}</label>
+                        <input type="text" class="form-control" name="option4" required placeholder="Option 4" style="padding-left:16px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("correct_answer") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-circle-check input-icon"></i>
+                        <input type="text" class="form-control" name="answer" required placeholder="Exact matching option text" style="padding-left:46px;">
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:12px; padding:20px 30px; background:#f8fafc; border-top:1px solid var(--border-color);">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeCrudModal('addQuizModal')">{{ t("cancel") }}</button>
+                <button type="submit" class="btn btn-accent btn-sm" style="color:#1e293b;">{{ t("submit") }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Add Student -->
+<div class="modal-overlay" id="addStudentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-user-graduate"></i> {{ t("add_student") }}</h3>
+            <button onclick="closeCrudModal('addStudentModal')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.3rem; display:flex; align-items:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form action="/admin/student/add" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>{{ t("name") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" class="form-control" name="name" required placeholder="Full Name" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("email_address") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" class="form-control" name="email" required placeholder="student@example.com" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("mobile_number") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="text" class="form-control" name="mobile" placeholder="9876543210" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Primary Parent Phone Number</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="text" class="form-control" name="primary_parent_phone" required placeholder="9876543210" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Secondary Parent Phone Number (Optional)</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="text" class="form-control" name="secondary_parent_phone" placeholder="9876543210" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("password") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" class="form-control" name="password" required placeholder="••••••••" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group">
+                        <label>{{ t("class_label") }}</label>
+                        <select class="form-control" name="class">
+                            <option value="LKG">LKG</option>
+                            <option value="UKG">UKG</option>
+                            <option value="Class 1">Class 1</option>
+                            <option value="Class 2">Class 2</option>
+                            <option value="Class 3">Class 3</option>
+                            <option value="Class 4">Class 4</option>
+                            <option value="Class 5">Class 5</option>
+                            <option value="Class 6">Class 6</option>
+                            <option value="Class 7">Class 7</option>
+                            <option value="Class 8" selected>Class 8</option>
+                            <option value="Class 9">Class 9</option>
+                            <option value="Class 10">Class 10</option>
+                            <option value="Class 11">Class 11</option>
+                            <option value="Class 12">Class 12</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ t("learning_language") }}</label>
+                        <select class="form-control" name="language">
+                            <option value="english" selected>English</option>
+                            <option value="tamil">Tamil</option>
+                            <option value="hindi">Hindi</option>
+                            <option value="telugu">Telugu</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeCrudModal('addStudentModal')">{{ t("cancel") }}</button>
+                    <button type="submit" class="btn btn-accent btn-sm" style="color:#1e293b;">{{ t("submit") }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Add Parent Link -->
+<div class="modal-overlay" id="addParentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-users"></i> {{ t("add_parent") }}</h3>
+            <button onclick="closeCrudModal('addParentModal')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.3rem; display:flex; align-items:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form action="/admin/parent/add" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>{{ t("name") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" class="form-control" name="name" required placeholder="Parent Name" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("email_address") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" class="form-control" name="email" required placeholder="parent@example.com" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("mobile_number") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="text" class="form-control" name="mobile" required placeholder="9876543210" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("password") }}</label>
+                    <div class="form-control-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" class="form-control" name="password" required placeholder="••••••••" style="padding-left:46px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ t("link_student") }}</label>
+                    <select class="form-control" name="student_id" required>
+                        <option value="" disabled selected>{{ t("select_child") }}</option>
+                        {% for s in students %}
+                            <option value="{{ s.student_id }}">{{ s.name }} ({{ s.email or s.mobile }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeCrudModal('addParentModal')">{{ t("cancel") }}</button>
+                    <button type="submit" class="btn btn-accent btn-sm" style="color:#1e293b;">{{ t("submit") }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Tab switching for Admin Panel
+    function switchAdminTab(tabId) {
+        // Remove active class from menu items
+        const menuItems = document.querySelectorAll('.admin-sidebar .admin-menu-item');
+        menuItems.forEach(item => item.classList.remove('active'));
+        
+        // Hide all panels
+        document.getElementById('panelCourses').style.display = 'none';
+        document.getElementById('panelVideos').style.display = 'none';
+        document.getElementById('panelNotes').style.display = 'none';
+        document.getElementById('panelQuizzes').style.display = 'none';
+        document.getElementById('panelStudents').style.display = 'none';
+        document.getElementById('panelParents').style.display = 'none';
+        
+        // Activate menu and show matching panel
+        if (tabId === 'courses') {
+            document.getElementById('menuCourses').classList.add('active');
+            document.getElementById('panelCourses').style.display = 'block';
+        } else if (tabId === 'videos') {
+            document.getElementById('menuVideos').classList.add('active');
+            document.getElementById('panelVideos').style.display = 'block';
+        } else if (tabId === 'notes') {
+            document.getElementById('menuNotes').classList.add('active');
+            document.getElementById('panelNotes').style.display = 'block';
+        } else if (tabId === 'quizzes') {
+            document.getElementById('menuQuizzes').classList.add('active');
+            document.getElementById('panelQuizzes').style.display = 'block';
+        } else if (tabId === 'students') {
+            document.getElementById('menuStudents').classList.add('active');
+            document.getElementById('panelStudents').style.display = 'block';
+        } else if (tabId === 'parents') {
+            document.getElementById('menuParents').classList.add('active');
+            document.getElementById('panelParents').style.display = 'block';
+        }
+        
+        localStorage.setItem('adminActiveTab', tabId);
+    }
+
+    // Modal Control functions
+    function openCrudModal(modalId) {
+        document.getElementById(modalId).classList.add('open');
+    }
+    
+    function closeCrudModal(modalId) {
+        document.getElementById(modalId).classList.remove('open');
+    }
+
+    // Set tab from localStorage or default on load
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let tab = urlParams.get('tab');
+        
+        if(!tab) {
+            tab = localStorage.getItem('adminActiveTab') || 'courses';
+        }
+        
+        switchAdminTab(tab);
+    });
+</script>
+{% endblock %}
